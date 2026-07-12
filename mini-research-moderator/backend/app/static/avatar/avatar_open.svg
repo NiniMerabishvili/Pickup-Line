@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 360" role="img" aria-label="Neo interviewer avatar speaking loudly">
+  <defs>
+    <clipPath id="frame">
+      <rect width="320" height="360" rx="24"/>
+    </clipPath>
+    <linearGradient id="scan" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#04140a" stop-opacity="0.12"/>
+      <stop offset="0.5" stop-color="#19ff6a" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#04140a" stop-opacity="0.18"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="360" rx="24" fill="#06180d"/>
+  <g clip-path="url(#frame)">
+    <image href="/static/avatar/neo_matrix_avatar.png" x="-100" y="-50" width="498" height="720" preserveAspectRatio="xMidYMid meet"/>
+    <rect width="320" height="360" fill="url(#scan)"/>
+    <ellipse cx="164" cy="292" rx="19" ry="9" fill="#100609" opacity="0.9"/>
+    <path d="M145 286c12 5 27 5 39 0" fill="none" stroke="#b45c5a" stroke-width="2.2" stroke-linecap="round" opacity="0.62"/>
+  </g>
+</svg>

@@ -1,0 +1,119 @@
+{
+  "id": "onboarding-feedback-v1",
+  "title": "Onboarding Flow Feedback",
+  "version": "1.0.0",
+  "estimated_duration_minutes": 4,
+  "topic": {
+    "product_name": "Atlas Notes",
+    "scenario": "A fictional note-taking app for students and early-career professionals.",
+    "research_goal": "Understand whether the first-run onboarding flow feels clear, trustworthy, and useful."
+  },
+  "moderator": {
+    "tone": "Warm, concise, neutral, and curious.",
+    "opening_message": "Hi, thanks for helping test Atlas Notes. I will ask a few short questions about the onboarding experience. There are no wrong answers, and you can be honest.",
+    "closing_message": "Thanks, that is all I needed. I will summarize the main points now."
+  },
+  "core_questions": [
+    {
+      "id": "q1_first_impression",
+      "order": 1,
+      "question": "What was your first impression of the onboarding flow?",
+      "intent": "Capture immediate emotional reaction and broad usability signal.",
+      "followup_hints": [
+        "Ask what specifically created that impression.",
+        "Ask whether anything felt confusing, slow, or unnecessary."
+      ]
+    },
+    {
+      "id": "q2_value_clarity",
+      "order": 2,
+      "question": "After seeing the onboarding, how clearly did you understand what Atlas Notes would help you do?",
+      "intent": "Evaluate whether the product value proposition is understandable.",
+      "followup_hints": [
+        "Ask the participant to describe the product in their own words.",
+        "Ask which part made the value clear or unclear."
+      ]
+    },
+    {
+      "id": "q3_trust_and_permissions",
+      "order": 3,
+      "question": "Did anything in the onboarding affect your trust in the product, positively or negatively?",
+      "intent": "Probe trust, privacy, permissions, and credibility concerns.",
+      "followup_hints": [
+        "Ask about any permission request, data claim, or wording that stood out.",
+        "Ask what would make the participant feel more comfortable."
+      ]
+    },
+    {
+      "id": "q4_improvement",
+      "order": 4,
+      "question": "If you could change one thing about the onboarding, what would you change?",
+      "intent": "Identify the highest-priority improvement from the participant's perspective.",
+      "followup_hints": [
+        "Ask why that change matters.",
+        "Ask what a better version would look or sound like."
+      ]
+    }
+  ],
+  "followup_policy": {
+    "max_followups_per_question": 1,
+    "ask_followup_when": [
+      {
+        "condition": "answer_word_count < 10",
+        "reason": "The answer is too short to produce useful research insight."
+      },
+      {
+        "condition": "answer_is_vague",
+        "reason": "The answer uses broad language without a specific example, cause, or consequence."
+      },
+      {
+        "condition": "answer_mentions_confusion_or_frustration",
+        "reason": "The participant surfaced a negative signal worth understanding before moving on."
+      },
+      {
+        "condition": "answer_mentions_trust_or_privacy_concern",
+        "reason": "Trust and privacy concerns are high-value research signals for onboarding."
+      }
+    ],
+    "move_on_when": [
+      "The participant gives a concrete answer with a reason or example.",
+      "The moderator has already asked one follow-up for the current question.",
+      "The participant says they do not know or do not remember after a clarification attempt."
+    ],
+    "style_rules": [
+      "Ask only one question at a time.",
+      "Do not lead the participant toward a positive or negative answer.",
+      "Do not repeat the same question in different words unless asking for clarification.",
+      "Keep follow-ups under 25 words."
+    ]
+  },
+  "failure_handling": {
+    "empty_or_silent_response": {
+      "max_retries": 1,
+      "prompt": "I did not catch an answer. Could you say a little about what stood out to you?"
+    },
+    "unclear_transcription": {
+      "max_retries": 1,
+      "prompt": "I may have misheard that. Could you repeat the main point in one sentence?"
+    },
+    "off_topic_response": {
+      "max_redirects": 1,
+      "prompt": "That is helpful context. Thinking specifically about the onboarding, what stood out?"
+    }
+  },
+  "summary_requirements": {
+    "format": "structured_json",
+    "include": [
+      "one_sentence_overall_summary",
+      "key_points_by_question",
+      "notable_quotes",
+      "themes",
+      "unanswered_or_unclear_items"
+    ],
+    "quote_rules": {
+      "max_quotes": 3,
+      "prefer_specific_quotes": true,
+      "include_question_id": true
+    }
+  }
+}
