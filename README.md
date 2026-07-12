@@ -160,15 +160,6 @@ The moderator never blindly proceeds on unreliable input:
 
 The browser page includes a **Simulate Unclear Input** control so this behavior can be demonstrated reliably on camera.
 
-## Current Limitations
-
-- In-memory sessions reset when the backend restarts
-- Browser speech recognition depends on Chrome/Edge support, and can fail with network or privacy errors — typed answers keep the demo unblocked in that case
-- Browser TTS doesn't expose an audio stream, so avatar mouth movement falls back to a timed animation there; OpenAI TTS audio uses amplitude analysis instead
-- OpenAI STT/TTS require API quota and billing
-- The adaptive decision maker is deterministic rather than LLM-powered
-- Vacancy question generation is deterministic and quota-free in this version
-- The browser page is a demo harness, not a production UI
 
 ## Next Steps
 
