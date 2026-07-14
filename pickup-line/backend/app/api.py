@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Literal
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
@@ -36,15 +35,15 @@ class StartInterviewResponse(BaseModel):
 
 class SubmitAnswerRequest(BaseModel):
     answer: str = Field(default="", description="Participant's text answer.")
-    input_quality: Literal["clear", "empty", "unclear"] = Field(
+    input_quality: str = Field(
         default="clear",
         description="Quality signal from STT or UI. Use unclear for low-confidence/noisy transcription.",
     )
 
 
 class VacancyInterviewRequest(BaseModel):
-    vacancy_text: str = Field(..., min_length=80, max_length=20000)
-    role_title: str | None = Field(default=None, max_length=120)
+    vacancy_text: str = Field(default="")
+    role_title: str | None = None
 
 
 class ModeratorResponse(BaseModel):
@@ -69,7 +68,7 @@ class SummaryResponse(BaseModel):
 
 
 class TTSRequest(BaseModel):
-    text: str = Field(..., min_length=1, max_length=4000)
+    text: str = Field(default="")
 
 
 app = FastAPI(
@@ -132,8 +131,18 @@ def start_interview() -> StartInterviewResponse:
 
 @app.post("/api/interviews/start-from-vacancy", response_model=StartInterviewResponse)
 def start_interview_from_vacancy(request: VacancyInterviewRequest) -> StartInterviewResponse:
+    vacancy_text = request.vacancy_text.strip()
+    role_title = request.role_title.strip() if request.role_title else None
+
+    if len(vacancy_text) < 80:
+        raise HTTPException(status_code=400, detail="Paste at least 80 characters of vacancy text.")
+    if len(vacancy_text) > 20000:
+        raise HTTPException(status_code=400, detail="Vacancy text is too long. Keep it under 20,000 characters.")
+    if role_title and len(role_title) > 120:
+        role_title = role_title[:120]
+
     try:
-        script = generate_interview_script_from_vacancy(request.vacancy_text, request.role_title)
+        script = generate_interview_script_from_vacancy(vacancy_text, role_title)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -148,7 +157,8 @@ def start_interview_from_vacancy(request: VacancyInterviewRequest) -> StartInter
 @app.post("/api/interviews/{session_id}/answer", response_model=ModeratorResponse)
 def submit_answer(session_id: str, request: SubmitAnswerRequest) -> ModeratorResponse:
     moderator = _get_session(session_id)
-    response = moderator.submit_answer(request.answer, input_quality=request.input_quality)
+    input_quality = request.input_quality if request.input_quality in {"clear", "empty", "unclear"} else "clear"
+    response = moderator.submit_answer(request.answer, input_quality=input_quality)
 
     return ModeratorResponse(session_id=session_id, **_response_payload(response))
 
@@ -170,8 +180,14 @@ def get_summary(session_id: str) -> SummaryResponse:
 
 @app.post("/api/tts")
 def synthesize_speech(request: TTSRequest) -> Response:
+    text = request.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Text is required for TTS.")
+    if len(text) > 4000:
+        raise HTTPException(status_code=400, detail="TTS text is too long. Keep it under 4,000 characters.")
+
     try:
-        result = _synthesizer.synthesize(request.text)
+        result = _synthesizer.synthesize(text)
     except TTSTimeoutError as exc:
         raise HTTPException(
             status_code=504,

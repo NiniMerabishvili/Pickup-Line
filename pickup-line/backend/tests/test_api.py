@@ -109,6 +109,31 @@ class ApiTests(unittest.TestCase):
         self.assertIn("AI Engineer Intern", body["text"])
         self.assertEqual(body["question_id"], "q1_role_fit")
 
+    def test_ui_validation_errors_do_not_return_422(self) -> None:
+        from fastapi.testclient import TestClient
+
+        from app.api import app
+
+        client = TestClient(app)
+
+        short_vacancy = client.post(
+            "/api/interviews/start-from-vacancy",
+            json={"vacancy_text": "too short", "role_title": "x" * 500},
+        )
+        self.assertEqual(short_vacancy.status_code, 400)
+        self.assertIn("80 characters", short_vacancy.json()["detail"])
+
+        tts = client.post("/api/tts", json={"text": ""})
+        self.assertEqual(tts.status_code, 400)
+        self.assertIn("Text is required", tts.json()["detail"])
+
+        start = client.post("/api/interviews/start")
+        answer = client.post(
+            f"/api/interviews/{start.json()['session_id']}/answer",
+            json={"answer": "This is a normal answer.", "input_quality": "unexpected"},
+        )
+        self.assertEqual(answer.status_code, 200)
+
     def test_audio_websocket_transcribes_and_feeds_agent(self) -> None:
         from fastapi.testclient import TestClient
 

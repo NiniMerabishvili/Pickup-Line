@@ -515,6 +515,11 @@
       async function startInterview() {
         const response = await fetch("/api/interviews/start", { method: "POST" });
         const data = await response.json();
+        if (!response.ok) {
+          statusEl.textContent = formatApiError(data, "Could not start interview.");
+          setDebug({ event: "start_interview_error", status: response.status, ...data });
+          return;
+        }
         beginInterviewSession(data);
       }
 
@@ -524,19 +529,24 @@
           statusEl.textContent = "Paste a longer vacancy description first.";
           return;
         }
+        if (vacancyText.length > 20000) {
+          statusEl.textContent = "Vacancy text is too long. Keep it under 20,000 characters.";
+          return;
+        }
 
         const response = await fetch("/api/interviews/start-from-vacancy", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             vacancy_text: vacancyText,
-            role_title: roleTitleInput.value.trim() || null,
+            role_title: roleTitleInput.value.trim().slice(0, 120) || null,
           }),
         });
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          statusEl.textContent = error.detail || "Could not generate interview questions.";
+          statusEl.textContent = formatApiError(error, "Could not generate interview questions.");
+          setDebug({ event: "vacancy_interview_error", status: response.status, ...error });
           return;
         }
 
@@ -810,10 +820,11 @@
 
       async function submitTextAnswer(answer, inputQuality = "clear") {
         statusEl.textContent = "Sending transcript to moderator...";
+        const normalizedQuality = ["clear", "empty", "unclear"].includes(inputQuality) ? inputQuality : "clear";
         const response = await fetch(`/api/interviews/${sessionId}/answer`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ answer, input_quality: inputQuality }),
+          body: JSON.stringify({ answer, input_quality: normalizedQuality }),
         });
         const data = await response.json();
         if (!response.ok) {
@@ -857,9 +868,30 @@
           return;
         }
 
-        const detail = typeof data.detail === "string" ? data.detail : "Could not submit answer.";
+        const detail = formatApiError(data, "Could not submit answer.");
         showGeneralNotice(detail);
         statusEl.textContent = detail;
+      }
+
+      function formatApiError(data, fallback) {
+        if (!data) {
+          return fallback;
+        }
+        if (typeof data.detail === "string") {
+          return data.detail;
+        }
+        if (Array.isArray(data.detail)) {
+          return data.detail
+            .map((item) => `${(item.loc || []).join(".") || "field"}: ${item.msg}`)
+            .join("; ");
+        }
+        if (data.detail?.message) {
+          return data.detail.message;
+        }
+        if (data.message) {
+          return data.message;
+        }
+        return fallback;
       }
 
       async function speakModeratorText(text) {
@@ -881,15 +913,19 @@
       }
 
       async function speakWithOpenAI(text) {
+        const ttsText = text.trim();
+        if (!ttsText) {
+          return;
+        }
         const response = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify({ text: ttsText.slice(0, 4000) }),
         });
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          throw new Error(error.detail?.message || `TTS request failed with ${response.status}`);
+          throw new Error(formatApiError(error, `TTS request failed with ${response.status}`));
         }
 
         const audioBlob = await response.blob();
