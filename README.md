@@ -6,9 +6,6 @@ The system runs a short, structured user-research interview: it asks adaptive fo
 
 The project is deliberately scoped as a small but real slice of a larger realtime agentic moderator: it proves out the **STT → agent decision → TTS** loop end to end before layering on larger product features.
 
-## Demo Video
-
-Screen recording: `TODO: add 2–3 minute walkthrough link`
 
 Suggested recording flow:
 
@@ -87,7 +84,7 @@ Browser test page
 From the project root:
 
 ```powershell
-cd "D:\Nini\ai engineer samsaxurii\GreatQuestion\pickup-line\mini-research-moderator\backend"
+python -m venv venv && source venv/bin/activate && pip install -r requirements.txt
 ```
 
 Install dependencies:
