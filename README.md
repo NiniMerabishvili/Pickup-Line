@@ -114,7 +114,6 @@ OPENAI_TTS_VOICE=coral
 Start the backend:
 
 ```powershell
-cd "D:\Nini\ai engineer samsaxurii\GreatQuestion\pickup-line"
 powershell -ExecutionPolicy Bypass -File ".\mini-research-moderator\backend\run_backend.ps1"
 ```
 
